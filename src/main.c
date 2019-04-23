@@ -25,6 +25,9 @@
  *  - NPO_st: No Partitioning Join Optimized (single-threaded)
  *  - AIR:    Array Index Referencing Join by ZYS
  *  - AIRU:   FK updates as PK changes for Array Index Referencing Join by ZYS
+ *  - NLJ:    Nest Loop Join
+ *  - SNLJ:   Simd-based Nest Loop Join
+ *  - SPNLJ:  Simd-based Partitioning Nest Loop Join
  *
  * @section compilation Compilation
  *
@@ -251,6 +254,7 @@ cpu-mapping.txt
 #include "parallel_radix_join.h"  /* parallel radix joins: RJ, PRO, PRH, PRHO */
 #include "generator.h"            /* create_relation_xk */
 #include "prj_params.h"         /* RELATION_PADDING for Parallel Radix */
+#include "nest_loop_join.h"     /* nest loop join */
 
 #include "perf_counters.h" /* PCM_x */
 #include "affinity.h"      /* pthread_attr_setaffinity_np & sched_setaffinity */
@@ -332,6 +336,9 @@ static struct algo_t algos [] =
       {"AIRU", AIRU}, /* FK update for AIR algorithm by ZYS. in no_partitioning_join.c*/
       {"STARJOIN", STARJOIN}, /* FK update for AIR algorithm by ZYS. in no_partitioning_join.c*/
       {"NPO_st", NPO_st}, /* NPO single threaded */
+      {"NLJ", NLJ},
+      {"SNLJ", SNLJ},
+      {"SPNLJ", SPNLJ},
       {{0}, 0}
   };
 

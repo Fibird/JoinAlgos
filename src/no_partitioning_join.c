@@ -10,6 +10,7 @@
  * 
  */
 
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -1384,7 +1385,6 @@ AIRU(relation_t *relR, relation_t *relS, int nthreads, double updateratio)
 int64_t 
 STARJOIN(column_t *factT, vector_t *DimVec, vector_t *MIndex,int nthreads, vector_para *parame,int *filterflag)
 {
-
     int64_t result = 0;
     int32_t numS, numSthr,FactTuples; //numR,numRthr --total and per thread num 
     int i, rv;

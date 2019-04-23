@@ -82,3 +82,7 @@ config.status
 config.log
 src/.deps
 autom4te.cache/
+src/mchashjoins
+src/tags
+src/Makefile
+Makefile

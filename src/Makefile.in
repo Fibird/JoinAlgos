@@ -77,6 +77,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_mchashjoins_OBJECTS = mchashjoins-no_partitioning_join.$(OBJEXT) \
 	mchashjoins-parallel_radix_join.$(OBJEXT) \
+	mchashjoins-nest_loop_join.$(OBJEXT) \
 	mchashjoins-perf_counters.$(OBJEXT) \
 	mchashjoins-cpu_mapping.$(OBJEXT) \
 	mchashjoins-genzipf.$(OBJEXT) mchashjoins-generator.$(OBJEXT) \
@@ -111,7 +112,7 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
-CFLAGS = -O3
+CFLAGS = -O3 -mavx2
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -214,6 +215,7 @@ mchashjoins_SOURCES = npj_params.h prj_params.h types.h npj_types.h 	\
 			cpu_mapping.h cpu_mapping.c 			\
 			genzipf.h genzipf.c generator.h generator.c 	\
 			lock.h rdtsc.h task_queue.h barrier.h affinity.h\
+			nest_loop_join.h nest_loop_join.c		\
 			main.c
 
 mchashjoins_LDFLAGS = $(AM_LDFLAGS) $(MYLDFLAGS) -pthread
@@ -308,6 +310,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mchashjoins-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mchashjoins-no_partitioning_join.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mchashjoins-parallel_radix_join.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mchashjoins-nest_loop_join.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mchashjoins-perf_counters.Po@am__quote@
 
 .c.o:
@@ -351,6 +354,20 @@ mchashjoins-parallel_radix_join.obj: parallel_radix_join.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='parallel_radix_join.c' object='mchashjoins-parallel_radix_join.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -c -o mchashjoins-parallel_radix_join.obj `if test -f 'parallel_radix_join.c'; then $(CYGPATH_W) 'parallel_radix_join.c'; else $(CYGPATH_W) '$(srcdir)/parallel_radix_join.c'; fi`
+
+mchashjoins-nest_loop_join.o: nest_loop_join.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -MT mchashjoins-nest_loop_join.o -MD -MP -MF $(DEPDIR)/mchashjoins-nest_loop_join.Tpo -c -o mchashjoins-nest_loop_join.o `test -f 'nest_loop_join.c' || echo '$(srcdir)/'`nest_loop_join.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mchashjoins-nest_loop_join.Tpo $(DEPDIR)/mchashjoins-nest_loop_join.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nest_loop_join.c' object='mchashjoins-nest_loop_join.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -c -o mchashjoins-nest_loop_join.o `test -f 'nest_loop_join.c' || echo '$(srcdir)/'`nest_loop_join.c
+
+mchashjoins-nest_loop_join.obj: nest_loop_join.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -MT mchashjoins-nest_loop_join.obj -MD -MP -MF $(DEPDIR)/mchashjoins-nest_loop_join.Tpo -c -o mchashjoins-nest_loop_join.obj `if test -f 'nest_loop_join.c'; then $(CYGPATH_W) 'nest_loop_join.c'; else $(CYGPATH_W) '$(srcdir)/nest_loop_join.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mchashjoins-nest_loop_join.Tpo $(DEPDIR)/mchashjoins-nest_loop_join.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='nest_loop_join.c' object='mchashjoins-nest_loop_join.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -c -o mchashjoins-nest_loop_join.obj `if test -f 'nest_loop_join.c'; then $(CYGPATH_W) 'nest_loop_join.c'; else $(CYGPATH_W) '$(srcdir)/nest_loop_join.c'; fi`
 
 mchashjoins-perf_counters.o: perf_counters.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -MT mchashjoins-perf_counters.o -MD -MP -MF $(DEPDIR)/mchashjoins-perf_counters.Tpo -c -o mchashjoins-perf_counters.o `test -f 'perf_counters.c' || echo '$(srcdir)/'`perf_counters.c
@@ -414,6 +431,7 @@ mchashjoins-main.o: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='mchashjoins-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -c -o mchashjoins-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+
 
 mchashjoins-main.obj: main.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mchashjoins_CFLAGS) $(CFLAGS) -MT mchashjoins-main.obj -MD -MP -MF $(DEPDIR)/mchashjoins-main.Tpo -c -o mchashjoins-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
