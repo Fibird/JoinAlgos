@@ -47,7 +47,7 @@ endif
 
 # if available, add the following flags
 # -mavx, -mtune=niagara2, -mcpu=ultrasparc
-AM_CFLAGS = -Wall -ansi -std=c99 -Wno-format -pedantic \
+AM_CFLAGS = -Wall -ansi -std=c99 -Wno-format -pedantic -mavx2\
 	    -g -msse4.2 $(DEFINES)
 
 AM_LDFLAGS =
@@ -56,6 +56,7 @@ CFLAGS = -O3
 bin_PROGRAMS = mchashjoins
 mchashjoins_SOURCES =  	npj_params.h prj_params.h types.h npj_types.h 	\
 			no_partitioning_join.h no_partitioning_join.c 	\
+			nest_loop_join.h nest_loop_join.c		\
 			parallel_radix_join.h parallel_radix_join.c   	\
 			perf_counters.h perf_counters.c			\
 			cpu_mapping.h cpu_mapping.c 			\

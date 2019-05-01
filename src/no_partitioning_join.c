@@ -359,6 +359,7 @@ probe_hashtable(hashtable_t *ht, relation_t *rel)
 
     return matches;
 }
+
 int64_t 
 probe_bmhashtable(hashtable_t *ht, int8_t * bm, relation_t *rel)
 {

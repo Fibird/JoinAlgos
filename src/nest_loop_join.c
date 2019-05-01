@@ -39,45 +39,40 @@ SNLJ(relation_t *relR, relation_t *relS, int nthreads)
 int64_t 
 SPNLJ(relation_t *relR, relation_t *relS, int nthreads)
 {
-   int64_t result = 0;
-	__m256i yidOuter;
-	__m256i yidInner;
-	__m256i yidResult = _mm256_set1_epi32(0);
-	__m256i yidTmp;
-        uint32_t vec_len = relS->num_tuples;
-        uint32_t n = relR->num_tuples;
+    int64_t result = 0;
+    __m256i yidOuter;
+    __m256i yidInner;
+    __m256i yidResult = _mm256_set1_epi32(0);
+    __m256i yidTmp;
+    uint32_t vec_len = relS->num_tuples * 2;
+    uint32_t n = relR->num_tuples;
 
-	int i, j, k;
-	int q[8];
-	int partition = L1/ 2 / 4;
-	void *p;
-	for (k = 0; k < vec_len; k += partition) {
-		int end = k + partition < vec_len ? k + partition : vec_len;
-		int bound = (end - k) / 8 * 8 + k;
-		for (i = 0; i < n; ++i) {
-			yidOuter = _mm256_set1_epi32(relR->tuples[i].key);
-                        int z = 0; 
-                        intkey_t *tmpK = malloc(sizeof(intkey_t) * 8);
-                        for (z = 0; z < 8; z++)
-                        {
-                            tmpK[z] = relR->tuples[z + k].key; 
-                        }
-                        p = tmpK;
-			for (j = k; j < bound; j+= 8) {
-				yidInner = _mm256_loadu_si256(p);
-				yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
-				yidResult = _mm256_sub_epi32(yidResult, yidTmp);
-				p += 32;
-			}
-			for (; j < end; ++j) {
-				if (relR->tuples[i].key == relS->tuples[j].key) {
-					++result;
-				}
-			}
+    int i, j, k;
+    int q[8];
+    int partition = L1 / 2 / 4;
+    void *p;
+    for (k = 0; k < vec_len; k += partition) {
+	int end = k + partition < vec_len ? k + partition : vec_len;
+	int bound = (end - k) / 8 * 8 + k;
+	for (i = 0; i < n; ++i) {
+	    yidOuter = _mm256_set1_epi32(relR->tuples[i].key);
+	    p = relS->tuples + k;
+	    for (j = k; j < bound; j += 8) {
+		yidInner = _mm256_loadu_si256(p);
+	        yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
+		yidResult = _mm256_sub_epi32(yidResult, yidTmp);
+		p += 32;
+	    }
+	    for (; j < end; ++j) {
+		if (relR->tuples[i].key == relS->tuples[j].key) {
+	            ++result;
 		}
+	    }
 	}
-	_mm256_storeu_si256((void *)q, yidResult);
-	result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
+    }
+    _mm256_storeu_si256((void *)q, yidResult);
+    //result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
+    result += q[0] + q[2] + q[4] + q[6];
 	// printf("[%d]", sink);
    return result;
 }
