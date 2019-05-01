@@ -133,7 +133,7 @@ configuration file used in the experiments, see <b>`pcm.cfg'</b> file.
 Lastly, an output file name with --perfout on commandline can be specified to
 print out profiling results, otherwise it defaults to stdout.
 
-D.3. System and Implementation Parameters
+## System and Implementation Parameters
 
 The join implementations need to know about the system at hand to a certain
 degree. For instance #CACHE_LINE_SIZE is required by both of the
@@ -197,10 +197,10 @@ distribution skewness parameter:
 # Wisconsin Implementation
 
 A slightly modified version of the original implementation provided by 
-Blanas et al. from University of Wisconsin is provided under `wisconsin-src'
+Blanas et al. from University of Wisconsin is provided under `wisconsin-src`
 directory. The changes we made are documented in the header of the README 
 file. These implementations provide the algorithms mentioned as 
-`non-optimized no partitioning join' and `non-optimized radix join' in our 
+`non-optimized no partitioning join` and `non-optimized radix join` in our 
 paper. The original source code can be downloaded from 
 http://pages.cs.wisc.edu/~sblanas/files/multijoin.tar.bz2 .
 
