@@ -1,7 +1,10 @@
+# Declaration
+
+This repo is based on the repo:<https://github.com/ybbh/multicore-hashjoins>. If the owner of the repo do not hope my using your repo, please contact me and I will delete this repo.
+
 # Introduction 
 
-This package provides implementations of the main-memory hash join algorithms
-described and studied in our ICDE 2013 paper. Namely, the implemented
+This package provides implementations of the main-memory join algorithms. Namely, the implemented
 algorithms are the following with the abbreviated names:
 
  - NPO:    No Partitioning Join Optimized (Hardware-oblivious algo. in paper)
@@ -129,14 +132,14 @@ For performance monitoring a config file can be provided on the command line
 with --perfconf which specifies which hardware counters to monitor. For 
 detailed list of hardware counters consult to "Intel 64 and IA-32 
 Architectures Software Developer’s Manual" Appendix A. For an example 
-configuration file used in the experiments, see <b>`pcm.cfg'</b> file. 
+configuration file used in the experiments, see `pcm.cfg' file. 
 Lastly, an output file name with --perfout on commandline can be specified to
 print out profiling results, otherwise it defaults to stdout.
 
 ## System and Implementation Parameters
 
 The join implementations need to know about the system at hand to a certain
-degree. For instance #CACHE_LINE_SIZE is required by both of the
+degree. For instance `#CACHE_LINE_SIZE` is required by both of the
 implementations. In case of no partitioning join, other implementation
 parameters such as bucket size or whether to pre-allocate for overflowing
 buckets are parametrized and can be modified in `npj_params.h'.
@@ -144,10 +147,10 @@ buckets are parametrized and can be modified in `npj_params.h'.
 On the other hand, radix joins are more sensitive to system parameters and 
 the optimal setting of parameters should be found from machine to machine to 
 get the same results as presented in the paper. System parameters needed are
-#CACHE_LINE_SIZE, #L1_CACHE_SIZE and
-#L1_ASSOCIATIVITY. Other implementation parameters specific to radix
-join are also important such as #NUM_RADIX_BITS
-which determines number of created partitions and #NUM_PASSES which
+`#CACHE_LINE_SIZE`, `#L1_CACHE_SIZE` and
+`#L1_ASSOCIATIVITY`. Other implementation parameters specific to radix
+join are also important such as `#NUM_RADIX_BITS`
+which determines number of created partitions and `#NUM_PASSES` which
 determines number of partitioning passes. Our implementations support between
 1 and 2 passes and they can be configured using these parameters to find the
 ideal performance on a given machine.
