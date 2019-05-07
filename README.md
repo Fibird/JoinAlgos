@@ -29,6 +29,7 @@ $ make
 Besides the usual ./configure options, compilation can be customized with the
 following options:
 
+```
    --enable-debug         enable debug messages on commandline  [default=no]
    --enable-key8B         use 8B keys and values making tuples 16B  [default=no]
    --enable-perfcounters  enable performance monitoring with Intel PCM  [no]
@@ -37,6 +38,7 @@ following options:
    --enable-syncstats     enable synchronization timing stats  [default=no]
    --enable-skewhandling  enable fine-granular task decomposition based skew
                           handling  in radix [default=no]
+```
 
 Additionally, the code can be configured to enable further optimizations
 discussed in the Technical Report version of the paper:
