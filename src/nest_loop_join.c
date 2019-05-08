@@ -116,24 +116,28 @@ snlj_thread(void *param)
     __m256i yidInner;
     __m256i yidResult = _mm256_set1_epi32(0);
     __m256i yidTmp;
-    uint32_t vec_len = args->relS.num_tuples * 2;
+    uint32_t vec_len = args->relS.num_tuples;
     uint32_t n = args->relR.num_tuples;
 
     int i, j, k;
     int q[8];
     int partition = L1 / 2 / 4;
-    void *p;
+    tuple_t *p;
     for (k = 0; k < vec_len; k += partition) {
 	int end = k + partition < vec_len ? k + partition : vec_len;
 	int bound = (end - k) / 8 * 8 + k;
 	for (i = 0; i < n; ++i) {
 	    yidOuter = _mm256_set1_epi32(args->relR.tuples[i].key);
+            intkey_t tmp[8];
+            int t;
 	    p = args->relS.tuples + k;
 	    for (j = k; j < bound; j += 8) {
-		yidInner = _mm256_loadu_si256(p);
+                for (t = 0; t < 8; t++) 
+                    tmp[t] = p[t].key;
+		yidInner = _mm256_loadu_si256(tmp);
 	        yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
 		yidResult = _mm256_sub_epi32(yidResult, yidTmp);
-		p += 32;
+		p += 8;
 	    }
 	    for (; j < end; ++j) {
 		if (args->relR.tuples[i].key == args->relS.tuples[j].key) {
@@ -143,10 +147,8 @@ snlj_thread(void *param)
 	}
     }
     _mm256_storeu_si256((void *)q, yidResult);
-    //result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
-    result += q[0] + q[2] + q[4] + q[6];
+    result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
     args->num_results = result;
-	// printf("[%d]", sink);
 
 #ifndef NO_TIMING
     /* for a reliable timing we have to wait until all finishes */
@@ -342,24 +344,28 @@ SPNLJ(relation_t *relR, relation_t *relS, int nthreads)
     __m256i yidInner;
     __m256i yidResult = _mm256_set1_epi32(0);
     __m256i yidTmp;
-    uint32_t vec_len = relS->num_tuples * 2;
+    uint32_t vec_len = relS->num_tuples;
     uint32_t n = relR->num_tuples;
 
     int i, j, k;
     int q[8];
     int partition = L1 / 2 / 4;
-    void *p;
+    tuple_t *p;
     for (k = 0; k < vec_len; k += partition) {
 	int end = k + partition < vec_len ? k + partition : vec_len;
 	int bound = (end - k) / 8 * 8 + k;
 	for (i = 0; i < n; ++i) {
 	    yidOuter = _mm256_set1_epi32(relR->tuples[i].key);
+            intkey_t tmp[8];
+            int t;
 	    p = relS->tuples + k;
 	    for (j = k; j < bound; j += 8) {
-		yidInner = _mm256_loadu_si256(p);
+                for (t = 0; t < 8; t++) 
+                    tmp[t] = p[t].key;
+		yidInner = _mm256_loadu_si256(tmp);
 	        yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
 		yidResult = _mm256_sub_epi32(yidResult, yidTmp);
-		p += 32;
+		p += 8;
 	    }
 	    for (; j < end; ++j) {
 		if (relR->tuples[i].key == relS->tuples[j].key) {
@@ -369,9 +375,7 @@ SPNLJ(relation_t *relR, relation_t *relS, int nthreads)
 	}
     }
     _mm256_storeu_si256((void *)q, yidResult);
-    //result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
-    result += q[0] + q[2] + q[4] + q[6];
-	// printf("[%d]", sink);
+    result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
 
    return result;
 }
