@@ -27,7 +27,6 @@
  *  - AIRU:   FK updates as PK changes for Array Index Referencing Join by ZYS
  *  - NLJ:    Nest Loop Join
  *  - SNLJ:   Simd-based Nest Loop Join
- *  - SPNLJ:  Simd-based Partitioning Nest Loop Join
  *
  * @section compilation Compilation
  *
@@ -296,6 +295,12 @@ struct algo_t {
     int64_t (*joinAlgo)(relation_t * , relation_t *, int);
 };
 
+enum method_t {
+    NAIVE, // default
+    PARTITION,
+    SIMD
+};
+
 struct param_t {
     algo_t * algo;
     int8_t * bitmap;  //--bitmap for relS in NPO_bm algorithm by zys
@@ -312,6 +317,7 @@ struct param_t {
     int starjoinflag;         //--starjoin flag
     int fullrange_keys;  /* keys covers full int range? */
     int basic_numa;/* alloc input chunks thread local? */
+    int method;  // just for NLJ
     char * perfconf;
     char * perfout;
 };
@@ -338,7 +344,6 @@ static struct algo_t algos [] =
       {"NPO_st", NPO_st}, /* NPO single threaded */
       {"NLJ", NLJ},
       {"SNLJ", SNLJ},
-      {"SPNLJ", SPNLJ},
       {{0}, 0}
   };
 
@@ -390,6 +395,7 @@ main(int argc, char ** argv)
     cmd_params.fullrange_keys   = 0;
     cmd_params.basic_numa = 0;
     cmd_params.starjoinflag = 0;
+    cmd_params.method   = 0;
 
     parse_args(argc, argv, &cmd_params);
 
@@ -492,6 +498,26 @@ main(int argc, char ** argv)
 
  //for(int i=0;i<cmd_params.s_size;i++) printf("%d ",bitm[i]);
 
+    if (!strcmp(cmd_params.algo->name, "NLJ")) {
+                    switch (cmd_params.method) {
+                        case NAIVE:
+                            //results = NLJ(&relR, &relS, cmd_params.nthreads);
+                            break;
+                        case PARTITION:
+                            //results = PNLJ(&relR, &relS, cmd_params.nthreads);
+                            strcpy(cmd_params.algo->name, "PNLJ");
+                            cmd_params.algo->joinAlgo = &PNLJ; 
+                            break;
+                        case SIMD:
+                            //results = SNLJ(&relR, &relS, cmd_params.nthreads);
+                            strcpy(cmd_params.algo->name, "SNLJ");
+                            cmd_params.algo->joinAlgo = &SNLJ; 
+                            break;
+                        default:
+                            printf("No this NLJ method! There are only 'naive', 'partition', 'simd' available.\n");
+                            return -1;
+                    }
+    }
     /* Run the selected join algorithm */
     printf("[INFO ] Running join algorithm %s ...\n", cmd_params.algo->name);
 
@@ -510,7 +536,7 @@ main(int argc, char ** argv)
 						 }/**/
                   }
                 else {
-                results = cmd_params.algo->joinAlgo(&relR, &relS, cmd_params.nthreads);
+                    results = cmd_params.algo->joinAlgo(&relR, &relS, cmd_params.nthreads);
                 }
 
     printf("[INFO ] Results = %llu. DONE.\n", results);
@@ -614,6 +640,7 @@ parse_args(int argc, char ** argv, param_t * cmd_params)
                 {"skew",    required_argument, 0, 'z'},
                 {"updratio", required_argument, 0, 'w'}, //--by zys
                 {"selectivity", required_argument, 0, 'u'}, //--by zys
+                {"method", required_argument, 0, 'm'}, //--by lcy
                {0, 0, 0, 0}
             };
         /* getopt_long stores the option index here. */
@@ -705,7 +732,16 @@ parse_args(int argc, char ** argv, param_t * cmd_params)
           case 'u':
               cmd_params->selectivity = atof(optarg);
               break;
-
+          case 'm':
+              if (strcmp(optarg, "naive") == 0)
+                cmd_params->method = NAIVE;
+              else if (strcmp(optarg, "partition") == 0)
+                cmd_params->method = PARTITION;
+              else if (strcmp(optarg, "simd") == 0)
+                cmd_params->method = SIMD;
+              else 
+                cmd_params->method = -1;
+              break;
           default:
               break;
         }

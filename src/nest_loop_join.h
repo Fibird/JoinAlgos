@@ -22,5 +22,5 @@ int64_t
 SNLJ(relation_t *relR, relation_t *relS, int nthreads);
 
 int64_t 
-SPNLJ(relation_t *relR, relation_t *relS, int nthreads);
+PNLJ(relation_t *relR, relation_t *relS, int nthreads);
 #endif
