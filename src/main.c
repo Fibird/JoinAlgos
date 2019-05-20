@@ -733,11 +733,11 @@ parse_args(int argc, char ** argv, param_t * cmd_params)
               cmd_params->selectivity = atof(optarg);
               break;
           case 'm':
-              if (strcmp(optarg, "naive") == 0)
+              if (strcmp(optarg, "naive") == 0 || strcmp(optarg, "Naive") == 0 || strcmp(optarg, "NAIVE") == 0)
                 cmd_params->method = NAIVE;
-              else if (strcmp(optarg, "partition") == 0)
+              else if (strcmp(optarg, "partition") == 0 || strcmp(optarg, "Partition") == 0 || strcmp(optarg, "PARTITION") == 0)
                 cmd_params->method = PARTITION;
-              else if (strcmp(optarg, "simd") == 0)
+              else if (strcmp(optarg, "simd") == 0 || strcmp(optarg, "Simd") == 0 || strcmp(optarg, "SIMD") == 0)
                 cmd_params->method = SIMD;
               else 
                 cmd_params->method = -1;

@@ -79,6 +79,19 @@ struct arg_nlj {
 #endif
 } ;
 
+typedef struct arg_t {
+    int32_t tid;
+    relation_t          relR;
+    relation_t          relS;
+    pthread_barrier_t *barrier;
+    int64_t num_results;
+#ifndef NO_TIMING
+   /* stats about the thread */
+   uint64_t timer1, timer2, timer3;
+   struct timeval start, end;
+#endif
+} arg_t;
+
 /** print out the execution time statistics of the join */
 static void 
 print_timing(uint64_t total, uint64_t numtuples, int64_t result,
@@ -94,6 +107,46 @@ print_timing(uint64_t total, uint64_t numtuples, int64_t result,
     fflush(stdout);
     fflush(stderr);
     fprintf(stdout, "\n");
+}
+
+int SIMD_partition_nlj_handler(relation_t *relR, relation_t *relS) {
+    int *pk = (int *) relR->tuples;
+    uint32_t pk_len = relR->num_tuples * 2;
+    int *fk = (int *) relS->tuples;
+    uint32_t fk_len = relS->num_tuples * 2;
+    __m256i yidOuter;
+	__m256i yidInner;
+	__m256i yidResult = _mm256_set1_epi32(0);
+	__m256i yidTmp;
+
+	int result = 0;
+	int i, j, k;
+	int q[8];
+	int partition = L1_CACHE_SIZE / 2 / 4;
+	void *p;
+	for (k = 0; k < pk_len; k += partition) {
+		int end = k + partition < pk_len ? k + partition : pk_len;
+		int bound = (end - k) / 8 * 8 + k;
+		for (i = 0; i < fk_len; i+= 2) { // only compare key
+			yidOuter = _mm256_set1_epi32(fk[i]);
+			p = pk + k;
+			for (j = k; j < bound; j+= 8) {
+				yidInner = _mm256_loadu_si256(p);
+				yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
+				yidResult = _mm256_sub_epi32(yidResult, yidTmp);
+				p = (int *)p + 8;
+			}
+			for (; j < end; j += 2) { // only compare key
+				if (fk[i] == pk[j]) {
+					++result;
+				}
+			}
+		}
+	}
+	_mm256_storeu_si256((void *)q, yidResult);
+  result += q[0] + q[2] + q[4] + q[6];
+	// printf("[%d]", result);
+	return result;
 }
 
 void *
@@ -113,45 +166,8 @@ snlj_thread(void *param)
     }
 #endif
 
-    int64_t result = 0;
-    __m256i yidOuter;
-    __m256i yidInner;
-    __m256i yidResult = _mm256_set1_epi32(0);
-    __m256i yidTmp;
-    uint32_t vec_len = args->relS.num_tuples;
-    uint32_t n = args->relR.num_tuples;
-
-    int i, j, k;
-    int q[8];
-    int partition = L1_CACHE_SIZE / 2 / 4;
-    tuple_t *p;
-    for (k = 0; k < vec_len; k += partition) {
-	int end = k + partition < vec_len ? k + partition : vec_len;
-	int bound = (end - k) / 8 * 8 + k;
-	for (i = 0; i < n; ++i) {
-	    yidOuter = _mm256_set1_epi32(args->relR.tuples[i].key);
-            intkey_t tmp[8];
-            int t;
-	    p = args->relS.tuples + k;
-	    for (j = k; j < bound; j += 8) {
-                for (t = 0; t < 8; t++) 
-                    tmp[t] = p[t].key;
-		yidInner = _mm256_loadu_si256(tmp);
-	        yidTmp = _mm256_cmpeq_epi32(yidOuter, yidInner);
-		yidResult = _mm256_sub_epi32(yidResult, yidTmp);
-		p += 8;
-	    }
-	    for (; j < end; ++j) {
-		if (args->relR.tuples[i].key == args->relS.tuples[j].key) {
-	            ++result;
-		}
-	    }
-	}
-    }
-    _mm256_storeu_si256((void *)q, yidResult);
-    result += q[0] + q[1] + q[2] + q[3] + q[4] + q[5] + q[6] + q[7];
-    args->num_results = result;
-
+    args->num_results = SIMD_partition_nlj_handler(&args->relR, &args->relS);
+    
 #ifndef NO_TIMING
     /* for a reliable timing we have to wait until all finishes */
     BARRIER_ARRIVE(args->barrier, rv);
@@ -214,7 +230,6 @@ SNLJ(relation_t *relR, relation_t *relS, int nthreads)
             printf("ERROR; return code from pthread_create() is %d\n", rv);
             exit(-1);
         }
-
     }
 
     for(i = 0; i < nthreads; i++) {
