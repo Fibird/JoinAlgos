@@ -87,7 +87,7 @@
  * The <tt>mchashjoins</tt> binary understands the following command line
  * options: 
  * @verbatim
-      Join algorithm selection, algorithms : RJ, PRO, PRH, PRHO, NPO, NPO_st
+      Join algorithm selection, algorithms : RJ, PRO, PRH, PRHO, NPO, NPO_st, NLJ
          -a --algo=<name>    Run the hash join algorithm named <name> [PRO]
  
       Other join configuration options, with default values in [] :
@@ -101,6 +101,7 @@
          --full-range       Spread keys in relns. in full 32-bit integer range
          --basic-numa       Numa-localize relations to threads (Experimental)
          -w --updratio=<w>  update ratio parameter for relation R <w> [0.0]  
+         -m --method        specific method of NLJ algorithm, only supported n(N)aive(NAIVE), s(S)imd(SIMD) and p(P)artition(PARTITION)
 
       Performance profiling options, when compiled with --enable-perfcounters.
          -p --perfconf=<P>  Intel PCM config file with upto 4 counters [none]  
@@ -557,7 +558,7 @@ print_help(char * progname)
     printf("Usage: %s [options]\n", progname);
 
     printf("\
-    Join algorithm selection, algorithms : RJ, PRO, PRH, PRHO, NPO, NPO_st    \n\
+    Join algorithm selection, algorithms : RJ, PRO, PRH, PRHO, NPO, NPO_st, NLJ    \n\
        -a --algo=<name>    Run the hash join algorithm named <name> [PRO]     \n\
                                                                               \n\
     Other join configuration options, with default values in [] :             \n\
@@ -568,6 +569,7 @@ print_help(char * progname)
        -y --s-seed=<y>    Seed value for generating relation S <y> [54321]    \n\
        -z --skew=<z>      Zipf skew parameter for probe relation S <z> [0.0]  \n\
        -w --updratio=<w>  update ratio parameter for PK relation R <w> [0.0]  \n\
+       -m --method        specific method of NLJ algorithm, only supported n(N)aive(NAIVE), s(S)imd(SIMD) and p(P)artition(PARTITION) \n\
        -u --selectivity=<u>  bitmap ratio parameter for FK relation S <u> [0.0]  \n\
        --non-unique       Use non-unique (duplicated) keys in input relations \n\
        --full-range       Spread keys in relns. in full 32-bit integer range  \n\

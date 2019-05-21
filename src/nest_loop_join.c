@@ -377,14 +377,14 @@ pnlj_thread(void *param)
     int i, j, k;
     int partition = L1_CACHE_SIZE / 2 / 4;
     for (k = 0; k < vec_len; k += partition) {
-	int end = k + partition < vec_len ? k + partition : vec_len;
-	for (i = 0; i < n; ++i) {
-	    for (j = k; j < end; ++j) {
-		if (args->relR.tuples[i].key == args->relS.tuples[j].key) {
+	    int end = k + partition < vec_len ? k + partition : vec_len;
+	    for (i = 0; i < n; ++i) {
+	      for (j = k; j < end; ++j) {
+		      if (args->relR.tuples[i].key == args->relS.tuples[j].key) {
 	            ++result;
-		}
+		      }
+	      }
 	    }
-	}
     }
     args->num_results = result;
 
